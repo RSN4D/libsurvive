@@ -65,3 +65,12 @@ venv
 dist/
 pysurvive.egg-info/
 _skbuild/
+
+# rsn_libsurvive SDK package - include everything
+!rsn_libsurvive/
+!rsn_libsurvive/**
+!rsn_libsurvive/**/*
+!rsn_libsurvive/bin/*.dll
+!rsn_libsurvive/bin/*.exe
+!rsn_libsurvive/bin/plugins/*.dll
+!rsn_libsurvive/lib/*.lib
