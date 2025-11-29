@@ -1,0 +1,218 @@
+================================================================================
+  LIBSURVIVE SDK - VISUAL STUDIO INTEGRATION GUIDE
+================================================================================
+
+QUICK START (3 Steps)
+---------------------
+
+1. Copy the rsn_libsurvive folder to your solution directory
+
+2. In your Visual Studio project:
+   Right-click Project → Add → Existing Property Sheet
+   → Browse to rsn_libsurvive\libsurvive.props → Open
+
+3. Include the header and start coding:
+   #include <libsurvive/survive_api.h>
+
+   See example_usage.cpp for complete working example.
+
+
+WHAT'S INCLUDED
+---------------
+
+✓ DLLs & Executables (6 files)
+  - libsurvive.dll (main library)
+  - survive-cli.exe, api_example.exe, sensors-readout.exe, etc.
+
+✓ Plugins (10 DLLs)
+  - Drivers: driver_vive.dll, driver_playback.dll, etc.
+  - Posers: poser_mpfit.dll, poser_barycentric_svd.dll, etc.
+
+✓ Import Libraries (4 .lib files)
+  - libsurvive.lib
+  - cnkalman.lib, cnmatrix.lib, mpfit.lib
+
+✓ Headers (~399 files)
+  - libsurvive API headers
+  - cnkalman, cnmatrix libraries
+  - Eigen 3.4 math library
+  - mpfit optimization library
+
+
+MANUAL INTEGRATION (If not using .props)
+-----------------------------------------
+
+Project Properties → Configuration Properties
+
+C/C++ → General → Additional Include Directories:
+  $(SolutionDir)rsn_libsurvive\include
+
+Linker → General → Additional Library Directories:
+  $(SolutionDir)rsn_libsurvive\lib
+
+Linker → Input → Additional Dependencies:
+  libsurvive.lib
+  cnkalman.lib
+  cnmatrix.lib
+  mpfit.lib
+
+Build Events → Post-Build Event → Command Line:
+  xcopy /Y /D "$(SolutionDir)rsn_libsurvive\bin\*.dll" "$(OutDir)"
+  xcopy /Y /D /E "$(SolutionDir)rsn_libsurvive\bin\plugins" "$(OutDir)plugins\"
+
+
+DEPLOYMENT CHECKLIST
+--------------------
+
+When distributing your application, include these files:
+
+Required:
+  ✓ Your_App.exe
+  ✓ libsurvive.dll
+  ✓ plugins\ folder (entire directory with all 10 DLLs)
+
+Optional (for specific features):
+  □ config.json (if you want to ship pre-calibrated settings)
+
+
+TESTING THE INSTALLATION
+-------------------------
+
+1. Test survive-cli.exe:
+   > cd rsn_libsurvive\bin
+   > survive-cli.exe --help
+
+2. Test api_example.exe:
+   > cd rsn_libsurvive\bin
+   > api_example.exe
+   (Should initialize and wait for devices)
+
+3. Build and run example_usage.cpp in your project
+
+
+COMMON ISSUES
+-------------
+
+Issue: "Cannot open include file: 'libsurvive/survive_api.h'"
+Fix: Check that include path is set correctly
+     Path should be: rsn_libsurvive\include
+
+Issue: "Unresolved external symbol"
+Fix: Make sure you're linking all 4 .lib files
+     Check that library directory path is correct
+
+Issue: "libsurvive.dll not found"
+Fix: Post-build event didn't run or failed
+     Manually copy libsurvive.dll to your Debug/Release folder
+     Make sure plugins\ folder is also copied
+
+Issue: "No devices detected"
+Fix: - Close SteamVR (it conflicts with libsurvive)
+     - Check USB connections
+     - Run as Administrator if needed
+
+
+PROJECT SETTINGS REQUIREMENTS
+------------------------------
+
+Platform: x64 (NOT x86/Win32)
+  libsurvive was built for x64 only
+
+C++ Language Standard: C++14 or newer recommended
+  For best compatibility with modern C++ features
+
+Runtime Library: Must match (default is /MD for Release)
+  If you get runtime errors, check this setting
+
+
+EXAMPLE PROJECT STRUCTURE
+--------------------------
+
+YourSolution\
+├── YourProject\
+│   ├── YourProject.vcxproj
+│   ├── main.cpp
+│   └── ... (other source files)
+├── rsn_libsurvive\          ← Copy this folder here
+│   ├── bin\
+│   ├── lib\
+│   ├── include\
+│   ├── libsurvive.props     ← Add this to your project
+│   └── example_usage.cpp    ← Reference this for code examples
+└── YourSolution.sln
+
+
+USING THE SIMPLE API
+---------------------
+
+Basic pattern:
+
+  #include <libsurvive/survive_api.h>
+
+  int main(int argc, char** argv) {
+      // Initialize
+      SurviveSimpleContext* ctx = survive_simple_init(argc, argv);
+
+      // Main loop
+      while (survive_simple_wait_for_update(ctx)) {
+          for (auto obj = survive_simple_get_next_updated(ctx);
+               obj != NULL;
+               obj = survive_simple_get_next_updated(ctx)) {
+
+              SurvivePose pose;
+              survive_simple_object_get_latest_pose(obj, &pose);
+
+              // Use pose.Pos[0,1,2] for position
+              // Use pose.Rot[0,1,2,3] for rotation (quaternion)
+          }
+      }
+
+      // Cleanup
+      survive_simple_close(ctx);
+      return 0;
+  }
+
+See example_usage.cpp for complete working code.
+
+
+COMMAND LINE OPTIONS
+--------------------
+
+Pass to survive_simple_init(argc, argv):
+
+  --v 100                Verbose output
+  --v 150                Very verbose (per-pose output)
+  --force-calibrate      Recalibrate lighthouses
+  --lighthouse-gen 2     Force lighthouse generation (1 or 2)
+  --playback file.rec    Playback recorded session
+  --record file.rec      Record session for later playback
+
+
+DOCUMENTATION
+-------------
+
+Headers: All API functions documented in header files
+  - survive_api.h       (High-level Simple API - recommended)
+  - survive.h           (Low-level API)
+  - survive_hooks.h     (Event callbacks)
+  - survive_types.h     (Data structures)
+
+Files in this package:
+  - README.md           (Detailed usage guide)
+  - example_usage.cpp   (Working code example)
+  - INTEGRATION_GUIDE.txt (This file)
+
+Online:
+  - https://github.com/cntools/libsurvive
+
+
+SUPPORT
+-------
+
+Discord: https://discordapp.com/invite/7QbCAGS
+GitHub Issues: https://github.com/cntools/libsurvive/issues
+
+
+================================================================================
+Package Info: Built Nov 29, 2024 | CMake 3.31 | MSVC 19.43 | x64 Release
+================================================================================

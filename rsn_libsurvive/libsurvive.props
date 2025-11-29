@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros">
+    <LIBSURVIVE_ROOT>$(MSBuildThisFileDirectory)</LIBSURVIVE_ROOT>
+  </PropertyGroup>
+
+  <PropertyGroup />
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(LIBSURVIVE_ROOT)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>$(LIBSURVIVE_ROOT)lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libsurvive.lib;cnkalman.lib;cnmatrix.lib;mpfit.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <ItemGroup>
+    <BuildMacro Include="LIBSURVIVE_ROOT">
+      <Value>$(LIBSURVIVE_ROOT)</Value>
+    </BuildMacro>
+  </ItemGroup>
+
+  <Target Name="CopyLibsurviveDLLs" AfterTargets="Build">
+    <Message Text="Copying libsurvive DLLs to output directory..." Importance="High" />
+    <Copy SourceFiles="$(LIBSURVIVE_ROOT)bin\libsurvive.dll" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
+    <ItemGroup>
+      <LibsurvivePlugins Include="$(LIBSURVIVE_ROOT)bin\plugins\*.dll" />
+    </ItemGroup>
+    <Copy SourceFiles="@(LibsurvivePlugins)" DestinationFolder="$(OutDir)plugins\" SkipUnchangedFiles="true" />
+  </Target>
+</Project>
